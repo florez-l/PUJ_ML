@@ -1,0 +1,7 @@
+2
+4 ReLU
+10 reLU
+5 RELU
+2 ReLu
+1 sIgMoId
+random
