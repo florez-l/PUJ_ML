@@ -3,7 +3,7 @@
 ## =========================================================================
 
 import sys
-sys.path.append( '../lib' )
+sys.path.append( '../../lib/python3' )
 import PUJ_ML
 
 if __name__ == '__main__':
@@ -20,6 +20,9 @@ if __name__ == '__main__':
 
   # Read data
   D_tr, D_te = PUJ_ML.IO.ReadMNIST( args.dirname )
+
+  # Fit model
+  PUJ_ML.Helpers.FitModel( model, args, D_tr, D_te )
 
 # end if
 

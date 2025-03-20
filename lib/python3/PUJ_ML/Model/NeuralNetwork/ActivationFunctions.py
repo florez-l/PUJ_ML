@@ -73,8 +73,8 @@ class ActivationFunctions:
       s = SoftMax( Z, False )
       return numpy.multiply( s, float( 1 ) - s )
     else:
-      S = numpy.exp( Z )
-      return numpy.divide( S, S.sum( axis = 1 ) )
+      S = numpy.exp( Z - Z.max( axis = 1 ).reshape( ( Z.shape[ 0 ], 1 ) ) )
+      return numpy.divide( S, S.sum( axis = 1 ).reshape( ( S.shape[ 0 ], 1 ) ) )
     # end if
   # end def
 

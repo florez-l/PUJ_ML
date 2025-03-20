@@ -43,6 +43,7 @@ class Adam( GradientDescent ):
       t += 1
 
       for batch in batches:
+        print( len( batch ) )
         J_tr, G = self.m_Model.cost_gradient( X_tr[ batch , : ], y_tr[ batch , : ], self.m_Lambda1, self.m_Lambda2 )
 
         mt = ( mt * b1 ) + ( G * cb1 )
