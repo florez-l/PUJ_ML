@@ -3,7 +3,7 @@
 ## =========================================================================
 
 import matplotlib.pyplot, sys
-sys.path.append( '../lib' )
+sys.path.append( '../../lib/python3' )
 import PUJ_ML
 
 if __name__ == '__main__':

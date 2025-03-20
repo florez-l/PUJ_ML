@@ -2,12 +2,7 @@
 ## @author Leonardo Florez-Valencia (florez-l@javeriana.edu.co)
 ## =========================================================================
 
-import sys
-
-
-
-
-import numpy, random
+import base64, numpy, random, struct
 from ..Base import Base
 from .ActivationFunctions import ActivationFunctions
 
@@ -91,29 +86,18 @@ class FeedForward( Base ):
   '''
   def __str__( self ):
     h = '0'
-    p = ''
 
     for l in range( self.number_of_layers( ) ):
       in_size = self.m_W[ l ].shape[ 0 ]
       out_size = self.m_W[ l ].shape[ 1 ]
 
       if l == 0:
-        h = str( in_size ) + '\n'
+        h = str( in_size )
       # end if
-      h += str( out_size ) + ' ' + self.m_A[ l ][ 0 ] + '\n'
-
-      for i in range( in_size ):
-        for o in range( out_size ):
-          p += str( self.m_W[ l ][ i, o ] ) + ' '
-        # end for
-      # end for
-      for o in range( out_size ):
-        p += str( self.m_B[ l ][ 0 , o ] ) + ' '
-      # end for
-
+      h += '\n' + str( out_size ) + ' ' + self.m_A[ l ][ 0 ]
     # end for
 
-    return h + p
+    return h
   # end def
 
   '''
@@ -138,7 +122,15 @@ class FeedForward( Base ):
       # *** TODO ***
       pass
     # end if
+  # end def
 
+  '''
+  '''
+  def load_and_decode( self, fname ):
+    fin = open( fname, 'rb' )
+    E = fin.read( )
+    fin.close( )
+    self.decode64( E )
   # end def
 
   '''
@@ -194,6 +186,71 @@ class FeedForward( Base ):
       for o in range( out_size ):
         self.m_B[ l ][ 0 , o ] = random.random( ) - 0.5
       # end for
+    # end for
+  # end def
+
+  '''
+  '''
+  def encode64( self ):
+    N = self.input_size( )
+    B = N.to_bytes( 8 )
+    if N > 0:
+      L = self.number_of_layers( )
+      for l in range( L ):
+        B += self.m_W[ l ].shape[ 1 ].to_bytes( 8 )
+        act_name = self.m_A[ l ][ 0 ]
+        A = bytearray( act_name.encode( 'ascii' ) )
+        B += len( A ).to_bytes( 8 )
+        B += A
+      # end for
+      end_header = 0
+      B += end_header.to_bytes( 8 )
+      for l in range( L ):
+        w = self.m_W[ l ].flatten( ).tolist( )
+        b = self.m_B[ l ].flatten( ).tolist( )
+        B += bytearray( struct.pack( '%sd' % len( w ), *w ) )
+        B += bytearray( struct.pack( '%sd' % len( b ), *b ) )
+      # end for
+    # end if
+    return str( base64.b64encode( B ) )[ 2 : -1 ]
+  # end def
+
+  '''
+  '''
+  def decode64( self, E ):
+    D = base64.b64decode( E )
+    i = int.from_bytes( D[ : 8 ] )
+    k = 8
+    stop = False
+    while not stop:
+      o = int.from_bytes( D[ k : k + 8 ] )
+      if o > 0:
+        n = int.from_bytes( D[ k + 8 : k + 16 ] )
+        a = str( D[ k + 16 : k + 16 + n ] )[ 2 : -1 ]
+        if i is None:
+          self.add_layer( o, ActivationFunctions.get( a ) )
+        else:
+          self.add_input_layer( i, o, ActivationFunctions.get( a ) )
+        # end if
+        i = None
+        k += n + 16
+      else:
+        k += 8
+        stop = True
+      # end if
+    # end while
+
+    # Read parameters
+    ds = len( D[ k : ] ) // self.size( )
+    L = self.number_of_layers( )
+    for l in range( L ):
+      i = self.m_W[ l ].shape[ 0 ]
+      o = self.m_W[ l ].shape[ 1 ]
+      n = i * o
+      self.m_W[ l ] = numpy.matrix( list( struct.unpack( '%sd' % n, D[ k : k + ( n * ds ) ] ) ) ).reshape( ( i, o ) )
+      k += n * ds
+      self.m_B[ l ] = numpy.matrix( list( struct.unpack( '%sd' % o, D[ k : k + ( o * ds ) ] ) ) ).reshape( ( 1, o ) )
+      k += o * ds
     # end for
   # end def
 
@@ -290,7 +347,13 @@ class FeedForward( Base ):
         a = self.m_A[ l ][ 1 ]( z )
       # end for
       if threshold:
-        return ( a >= 0.5 ).astype( float )
+        if self.m_A[ -1 ][ 0 ].lower( ) == 'sigmoid':
+          return ( a >= 0.5 ).astype( int )
+        elif self.m_A[ -1 ][ 0 ].lower( ) == 'softmax':
+          return a.argmax( axis = 1 ).astype( int )
+        else:
+          return a
+        # end if
       else:
         return a
       # end if

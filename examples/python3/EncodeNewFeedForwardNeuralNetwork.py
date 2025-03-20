@@ -8,7 +8,7 @@ import PUJ_ML
 
 # Prepare a model
 model = PUJ_ML.Model.NeuralNetwork.FeedForward( )
-model.load_and_decode( sys.argv[ 1 ] )
+model.load( sys.argv[ 1 ] )
 
 print( '==================================================' )
 print( 'Read model:\n' + str( model ) )
@@ -26,4 +26,9 @@ print( '==================================================' )
 print( 'y(X)   =\n', str( model( X, True ) ) )
 print( '==================================================' )
 
-## eof - FeedForwardNeuralNetwork.py
+# Save model
+out = open( sys.argv[ 2 ], 'wb' )
+out.write( model.encode64( ).encode( 'ascii' ) )
+out.close( )
+
+## eof - EncodeNewFeedForwardNeuralNetwork.py
