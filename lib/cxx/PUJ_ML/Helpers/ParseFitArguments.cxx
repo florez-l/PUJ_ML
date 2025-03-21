@@ -17,6 +17,7 @@ ParseFitArguments( const std::string& desc, int argc, char** argv )
     ( "L2", boost::program_options::value< TReal >( &this->L2 )->default_value( this->L2 ), "Ridge coefficient" )
     ( "epochs,e", boost::program_options::value< TNatural >( &this->Epochs )->default_value( this->Epochs ), "Maximum numer of epochs" )
     ( "batch_size,b", boost::program_options::value< TNatural >( &this->BatchSize )->default_value( this->BatchSize ), "Batch size" )
+    ( "K,K", boost::program_options::value< TNatural >( &this->K )->default_value( this->K ), "Number of groups for Kfold" )
     ( "optimizer,o", boost::program_options::value< std::string >( &this->Optimizer )->default_value( this->Optimizer ), "Adam|GradientDescent" )
     ( "validation,v", boost::program_options::value< std::string >( &this->Validation )->default_value( this->Validation ), "normal|LOO|KFoldK" )
     ;

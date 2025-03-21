@@ -28,6 +28,14 @@ namespace PUJ_ML
       Base( const TNatural& n = 0 );
       virtual ~Base( );
 
+      TNatural size( ) const;
+
+      template< class _Tw >
+      Self& operator+=( const Eigen::EigenBase< _Tw >& w );
+
+      template< class _Tw >
+      Self& operator-=( const Eigen::EigenBase< _Tw >& w );
+
       std::string encode64( ) const;
 
     protected:
@@ -47,6 +55,8 @@ namespace PUJ_ML
     };
   } // end namespace
 } // end namespace
+
+#include <PUJ_ML/Model/Base.hxx>
 
 #endif // __PUJ_ML__Model__Base__h__
 

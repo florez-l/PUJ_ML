@@ -44,7 +44,12 @@ int main( int argc, char** argv )
     std::cout << "  ---> Encoded model: " << model.encode64( ) << std::endl;
 
     // Fit model
-    PUJ_ML::Helpers::FitModel( model, args, D_tr, TMatrix( ) );
+    PUJ_ML::Helpers::FitModel(
+      model, args,
+      D_tr.block( 0, 0, D_tr.rows( ), D_tr.cols( ) - 1 ),
+      D_tr.col( D_tr.cols( ) - 1 ),
+      TMatrix( ), TMatrix( )
+      );
 
     // Show final models
     std::cout << "==============================================" << std::endl;

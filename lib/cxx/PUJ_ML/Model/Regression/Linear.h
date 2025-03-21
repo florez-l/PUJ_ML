@@ -41,6 +41,14 @@ namespace PUJ_ML
           const Eigen::EigenBase< _Ty >& by
           ) const;
 
+        template< class _TG, class _TX, class _Ty >
+        TReal cost_gradient(
+          Eigen::EigenBase< _TG >& G,
+          const Eigen::EigenBase< _TX >& bX,
+          const Eigen::EigenBase< _Ty >& by,
+          const TReal& L1, const TReal& L2
+          ) const;
+
         /*
          * TODO: Use of L1 regularization is not yet solved
          */

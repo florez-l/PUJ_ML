@@ -25,6 +25,15 @@ PUJ_ML::Model::Base< _TReal, _TNatural >::
 
 // -------------------------------------------------------------------------
 template< class _TReal, class _TNatural >
+typename PUJ_ML::Model::Base< _TReal, _TNatural >::
+TNatural PUJ_ML::Model::Base< _TReal, _TNatural >::
+size( ) const
+{
+  return( this->m_S );
+}
+
+// -------------------------------------------------------------------------
+template< class _TReal, class _TNatural >
 std::string PUJ_ML::Model::Base< _TReal, _TNatural >::
 encode64( ) const
 {

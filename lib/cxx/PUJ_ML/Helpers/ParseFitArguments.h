@@ -52,6 +52,7 @@ namespace PUJ_ML
       TReal L2 { 0 };
       TNatural BatchSize { 0 };
       TNatural Epochs { 1000 };
+      TNatural K         { 1 };
 
       std::string Optimizer  { "adam" };
       std::string Validation { "normal" };

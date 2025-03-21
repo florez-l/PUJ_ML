@@ -44,6 +44,34 @@ cost(
 
 // -------------------------------------------------------------------------
 template< class _TReal, class _TNatural >
+template< class _TG, class _TX, class _Ty >
+typename PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
+TReal PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
+cost_gradient(
+  Eigen::EigenBase< _TG >& G,
+  const Eigen::EigenBase< _TX >& bX,
+  const Eigen::EigenBase< _Ty >& by,
+  const TReal& L1, const TReal& L2
+  ) const
+{
+  auto X = bX.derived( ).template cast< TReal >( );
+  auto y = by.derived( ).template cast< TReal >( );
+
+  TColumn z = this->operator()( X );
+  SVisitor v( z );
+  y.visit( v );
+  z -= y;
+
+  G.derived( )( 0 , 0 ) = z.mean( );
+  G.derived( ).block( 1, 0, X.cols( ), 1 )
+    =
+    ( X.array( ).colwise( ) * z.array( ) ).colwise( ).mean( ).transpose( );
+
+  return( v.J / TReal( X.rows( ) ) );
+}
+
+// -------------------------------------------------------------------------
+template< class _TReal, class _TNatural >
 template< class _TX, class _Ty >
 void PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
 fit(
