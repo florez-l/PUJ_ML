@@ -1,10 +1,10 @@
 // =========================================================================
 // @author Leonardo Florez-Valencia (florez-l@javeriana.edu.co)
 // =========================================================================
-#ifndef __PUJ_ML__Model__Regression__Linear__h__
-#define __PUJ_ML__Model__Regression__Linear__h__
+#ifndef __PUJ_ML__Model__Regression__Logistic__h__
+#define __PUJ_ML__Model__Regression__Logistic__h__
 
-#include <PUJ_ML/Model/Base.h>
+#include <PUJ_ML/Model/Regression/Linear.h>
 
 namespace PUJ_ML
 {
@@ -15,13 +15,14 @@ namespace PUJ_ML
       /**
        */
       template< class _TReal, class _TNatural = unsigned long long >
-      class Linear
-        : public PUJ_ML::Model::Base< _TReal, _TNatural >
+      class Logistic
+        : public PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >
       {
       public:
-        using Self       = Linear;
-        using Superclass = PUJ_ML::Model::Base< _TReal, _TNatural >;
-
+        using Self  = Logistic;
+        using Superclass
+        =
+          PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >;
         using TReal    = typename Superclass::TReal;
         using TNatural = typename Superclass::TNatural;
         using TMatrix  = typename Superclass::TMatrix;
@@ -29,20 +30,20 @@ namespace PUJ_ML
         using TRow     = typename Superclass::TRow;
 
       public:
-        Linear( const TNatural& n = 0 );
-        virtual ~Linear( ) override;
+        Logistic( const TNatural& n = 0 );
+        virtual ~Logistic( ) override;
 
         template< class _TX >
         auto operator()( const Eigen::EigenBase< _TX >& X ) const;
 
         template< class _TX, class _Ty >
         TReal cost(
-          const Eigen::EigenBase< _TX >& bX,
-          const Eigen::EigenBase< _Ty >& by
+          const Eigen::EigenBase< _TX >& X,
+          const Eigen::EigenBase< _Ty >& y
           ) const;
 
         /*
-         * TODO: Use of L1 regularization is not yet solved
+         * TODO: this method has no sense in logistic regression
          */
         template< class _TX, class _Ty >
         void fit(
@@ -50,13 +51,30 @@ namespace PUJ_ML
           const Eigen::EigenBase< _Ty >& by,
           const TReal& L1 = 0, const TReal& L2 = 0
           );
+
+      protected:
+        using TIdx = Eigen::Index;
+
+        /**
+         */
+        struct SVisitor
+        {
+          SVisitor( const TColumn& Z );
+          void init( const TReal& y, const TIdx& i, const TIdx& j );
+          void operator()( const TReal& y, const TIdx& i, const TIdx& j );
+
+          const TColumn* Z;
+          TReal J;
+          TReal E;
+          TReal D;
+        };
       };
     } // end namespace
   } // end namespace
 } // end namespace
 
-#include <PUJ_ML/Model/Regression/Linear.hxx>
+#include <PUJ_ML/Model/Regression/Logistic.hxx>
 
-#endif // __PUJ_ML__Model__Regression__Linear__h__
+#endif // __PUJ_ML__Model__Regression__Logistic__h__
 
 // eof - $RCSfile$

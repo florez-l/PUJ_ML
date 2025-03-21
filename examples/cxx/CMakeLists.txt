@@ -10,6 +10,7 @@ include_directories(
 set(
   _execs
   LinearRegressionClosedFit
+  LogisticRegressionFit
   )
 
 foreach(_e ${_execs})

@@ -7,6 +7,7 @@ file(GLOB_RECURSE _hxx ${CMAKE_CURRENT_SOURCE_DIR}/*.hxx)
 file(GLOB_RECURSE _cxx ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx)
 
 include_directories(
+  ${Boost_INCLUDE_DIRS}
   ${PROJECT_BINARY_DIR}/lib/cxx
   ${PROJECT_SOURCE_DIR}/lib/cxx
   )
@@ -16,6 +17,6 @@ generate_export_header(
   EXPORT_MACRO_NAME PUJ_ML_EXPORT
   EXPORT_FILE_NAME Export.h
   )
-target_link_libraries(PUJ_ML Eigen3::Eigen)
+target_link_libraries(PUJ_ML Eigen3::Eigen ${Boost_LIBRARIES})
 
 ## eof - $RCSfile$

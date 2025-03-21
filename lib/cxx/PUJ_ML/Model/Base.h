@@ -6,11 +6,6 @@
 
 #include <PUJ_ML/Config.h>
 
-
-#include <cstring>
-
-#include <PUJ_ML/IO/Base64.h>
-
 namespace PUJ_ML
 {
   namespace Model
@@ -30,51 +25,14 @@ namespace PUJ_ML
       using TRow    = Eigen::Matrix< TReal, 1, Eigen::Dynamic >;
 
     public:
-      Base( const TNatural& n = 0 )
-        {
-          this->_allocate( n );
-        }
-      ~Base( )
-        {
-          this->_allocate( 0 );
-        }
+      Base( const TNatural& n = 0 );
+      virtual ~Base( );
 
-      std::string encode64( ) const
-        {
-          std::string e = PUJ_ML::IO::Base64::encode( ( unsigned char )( sizeof( TReal ) ) ) + PUJ_ML::IO::Base64::encode( ( unsigned char )( sizeof( TNatural ) ) );
-          e += PUJ_ML::IO::Base64::encode( this->m_S );
-          for( TReal* p = this->m_P; p != this->m_P + this->m_S; ++p )
-            e += PUJ_ML::IO::Base64::encode( p );
-          return( e );
-        }
+      std::string encode64( ) const;
 
     protected:
-      virtual void _allocate( const TNatural& n )
-        {
-          if( this->m_P != nullptr )
-            std::free( this->m_P );
-          this->m_P = nullptr;
-          this->m_S = n;
-          if( this->m_S > 0 )
-            this->m_P = reinterpret_cast< TReal* >( std::calloc( this->m_S, sizeof( TReal ) ) );
-          if( this->m_P != nullptr )
-          {
-            for( TReal* p = this->m_P; p != this->m_P + this->m_S; ++p )
-              *p = TReal( 0 );
-          }
-          else
-          {
-            this->m_P = nullptr;
-            this->m_S = 0;
-          } // end if
-        }
-
-      virtual void _to_stream( std::ostream& o ) const
-        {
-          o << this->m_S;
-          for( TReal* p = this->m_P; p != this->m_P + this->m_S; ++p )
-            o << " " << *p;
-        }
+      virtual void _allocate( const TNatural& n );
+      virtual void _to_stream( std::ostream& o ) const;
 
     protected:
       TReal*   m_P { nullptr };
