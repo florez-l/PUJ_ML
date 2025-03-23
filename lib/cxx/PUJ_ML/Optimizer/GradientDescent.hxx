@@ -15,7 +15,7 @@ GradientDescent(
   const Eigen::EigenBase< _TXTe >& X_te,
   const Eigen::EigenBase< _TYTe >& Y_te
   )
-    : Superclass( X_tr, Y_tr, X_te, Y_te )
+  : Superclass( X_tr, Y_tr, X_te, Y_te )
 {
 }
 
@@ -28,7 +28,8 @@ PUJ_ML::Optimizer::GradientDescent< _TModel, _TXTr, _TYTr, _TXTe, _TYTe >::
 
 // -------------------------------------------------------------------------
 template< class _TModel, class _TXTr, class _TYTr, class _TXTe, class _TYTe >
-void PUJ_ML::Optimizer::GradientDescent< _TModel, _TXTr, _TYTr, _TXTe, _TYTe >::
+void
+PUJ_ML::Optimizer::GradientDescent< _TModel, _TXTr, _TYTr, _TXTe, _TYTe >::
 _fit( TModel& model, const TBatches& batches )
 {
   auto Xtr = this->m_Xtr->derived( ).template cast< TReal >( );
@@ -48,7 +49,13 @@ _fit( TModel& model, const TBatches& batches )
     typename TBatches::const_iterator bIt = batches.begin( );
     while( bIt !=  batches.end( ) && !stop )
     {
-      J_tr = model.cost_gradient( G, Xtr( *bIt, Eigen::all ), Ytr( *bIt, Eigen::all ), this->m_L1, this->m_L2 );
+      J_tr
+        =
+        model.cost_gradient(
+          G,
+          Xtr( *bIt, Eigen::all ), Ytr( *bIt, Eigen::all ),
+          this->m_L1, this->m_L2
+          );
       if( !std::isnan( J_tr ) && !std::isinf( J_tr ) )
       {
         sG += G;
@@ -61,7 +68,11 @@ _fit( TModel& model, const TBatches& batches )
     if( !stop )
     {
       J_te = ( 0 < Xte.rows( ) )? model.cost( Xte, Yte ): 0;
-      stop = this->m_Debug( t, std::sqrt( sG.array( ).pow( 2 ).sum( ) ), J_tr, J_te );
+      stop
+        =
+        this->m_Debug(
+          t, std::sqrt( sG.array( ).pow( 2 ).sum( ) ), J_tr, J_te
+          );
       stop |= ( t >= this->m_NumberOfMaximumIterations );
     }
     else
