@@ -6,15 +6,7 @@
 
 #include <PUJ_ML/Config.h>
 #include <functional>
-
-
-
-#include <algorithm>
-#include <random>
 #include <vector>
-
-
-
 
 namespace PUJ_ML
 {
@@ -56,98 +48,24 @@ namespace PUJ_ML
         const Eigen::EigenBase< _TYTr >& Y_tr,
         const Eigen::EigenBase< _TXTe >& X_te,
         const Eigen::EigenBase< _TYTe >& Y_te
-        )
-        {
-          this->m_Xtr = &X_tr;
-          this->m_Ytr = &Y_tr;
-          this->m_Xte = &X_te;
-          this->m_Yte = &Y_te;
+        );
+      virtual ~Base( );
 
-          // TODO: check sizes
-        }
-      virtual ~Base( )
-        {
-        }
+      void setAlpha( const TReal& a );
+      void setL1( const TReal& l );
+      void setL2( const TReal& l );
+      void setBatchSize( const TNatural& bs );
+      void setValidationToNormal( );
+      void setValidationToLeaveOneOut( );
+      void setValidationToKfold( const TNatural& K );
+      void setNumberOfMaximumIterations( const TNatural& i );
 
-      void setAlpha( const TReal& a )
-        {
-          this->m_Alpha = a;
-        }
-      void setL1( const TReal& l )
-        {
-          this->m_L1 = l;
-        }
-      void setL2( const TReal& l )
-        {
-          this->m_L2 = l;
-        }
-      void setBatchSize( const TNatural& bs )
-        {
-          this->m_BatchSize = bs;
-        }
-      void setValidationToNormal( )
-        {
-          this->m_Validation = Self::Normal;
-        }
-      void setValidationToLeaveOneOut( )
-        {
-          this->m_Validation = Self::LeaveOneOut;
-        }
-      void setValidationToKfold( const TNatural& K )
-        {
-          this->m_Validation = Self::Kfold;
-          this->m_K = K;
-        }
-      void setNumberOfMaximumIterations( const TNatural& i )
-        {
-          this->m_NumberOfMaximumIterations = i;
-        }
-
-      void fit( TModel& model )
-        {
-          if( this->m_Validation == Self::Normal )
-            this->_fit_normal( model );
-          else if( this->m_Validation == Self::LeaveOneOut )
-            this->_fit_loo( model );
-          else if( this->m_Validation == Self::Kfold )
-            this->_fit_kfold( model, this->m_K );
-        }
+      void fit( TModel& model );
 
     protected:
-      void _fit_normal( TModel& model )
-        {
-          TNatural M = this->m_Xtr->rows( );
-          std::vector< Eigen::Index > idx( M );
-          idx.shrink_to_fit( );
-          std::iota( idx.begin( ), idx.end( ), 0 );
-          std::random_device dev;
-          std::mt19937 gen( dev( ) );
-          std::shuffle( idx.begin( ), idx.end( ), gen );
-
-          TNatural bs = this->m_BatchSize;
-          if( bs == 0 || bs > M )
-            bs = M;
-          TBatches batches;
-          for( TNatural b = 0; b < M; b += bs )
-          {
-            TNatural e = b + bs;
-            if( !( e < M ) )
-              e = M;
-            batches.push_back( TIndices( idx.begin( ) + b, idx.begin( ) + e ) );
-            batches.back( ).shrink_to_fit( );
-          } // end for
-          batches.shrink_to_fit( );
-
-          this->_fit( model, batches );
-        }
-
-      void _fit_loo( TModel& model )
-        {
-        }
-
-      void _fit_kfold( TModel& model, const TNatural& K )
-        {
-        }
+      void _fit_normal( TModel& model );
+      void _fit_loo( TModel& model );
+      void _fit_kfold( TModel& model, const TNatural& K );
 
       virtual void _fit( TModel& model, const TBatches& batches ) = 0;
 
@@ -173,15 +91,14 @@ namespace PUJ_ML
             const TNatural& t,
             const TReal& nG,
             const TReal& Jtr, const TReal& Jte
-            ) -> bool
-          {
-            std::cout << t << " " << nG << " " << Jtr << " " << Jte << std::endl;
-            return( false );
-          }
+            ) -> bool { return( false ); }
         };
     };
   } // end namespace
 } // end namespace
+
+#include <PUJ_ML/Optimizer/Base.hxx>
+
 #endif // __PUJ_ML__Optimizer__Base__h__
 
 // eof - $RCSfile$
