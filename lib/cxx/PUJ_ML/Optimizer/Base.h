@@ -105,12 +105,6 @@ namespace PUJ_ML
 
       void fit( TModel& model )
         {
-          /* TODO
-             auto X_tr = bX_tr.derived( ).template cast< TReal >( );
-             auto Y_tr = bY_tr.derived( ).template cast< TReal >( );
-             auto X_te = bX_te.derived( ).template cast< TReal >( );
-             auto Y_te = bY_te.derived( ).template cast< TReal >( );
-          */
           if( this->m_Validation == Self::Normal )
             this->_fit_normal( model );
           else if( this->m_Validation == Self::LeaveOneOut )

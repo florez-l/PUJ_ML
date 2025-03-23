@@ -14,14 +14,14 @@ operator()( const Eigen::EigenBase< _TX >& X ) const
 {
   static const TReal _0  = TReal( 0 );
   static const TReal _1  = TReal( 1 );
-  static const TReal _M  = std::numeric_limits< TReal >::max( );
-  static const TReal _L  = std::log( _M ) / TReal( 2 );
+  static const TReal M  = std::numeric_limits< TReal >::max( );
+  static const TReal L  = std::log( M ) / TReal( 2 );
   auto f = []( TReal z ) -> TReal
     {
       TReal s;
-      if     ( z >  _L ) s = _1;
-      else if( z < -_L ) s = _0;
-      else               s = _1 / ( _1 + std::exp( -z ) );
+      if     ( z >  L ) s = _1;
+      else if( z < -L ) s = _0;
+      else              s = _1 / ( _1 + std::exp( -z ) );
       return( s );
     };
   return( this->Superclass::operator()( X ).unaryExpr( f ) );
