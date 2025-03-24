@@ -2,4 +2,5 @@
 16 Tanh
 4 Relu
 2 softmax
+0
 random

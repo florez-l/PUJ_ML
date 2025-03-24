@@ -18,7 +18,7 @@ int main( int argc, char** argv )
   if( argc < 2 )
   {
     std::cerr
-      << "Usage: python " << argv[ 0 ]
+      << "Usage: " << argv[ 0 ]
       << " data.csv [L1=0] [L2=0] [delimiter=\",\"]"
       << std::endl;
     return( EXIT_FAILURE );

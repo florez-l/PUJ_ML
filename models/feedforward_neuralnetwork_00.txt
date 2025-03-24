@@ -4,4 +4,5 @@
 5 RELU
 2 ReLu
 1 sIgMoId
+0
 random

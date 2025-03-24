@@ -9,6 +9,7 @@ include_directories(
 
 set(
   _execs
+  FeedForwardNeuralNetwork
   LinearRegressionClosedFit
   LogisticRegressionFit
   )

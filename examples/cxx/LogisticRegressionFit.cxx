@@ -5,8 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include <PUJ_ML/Helpers/FitModel.h>
-#include <PUJ_ML/Helpers/ParseFitArguments.h>
+#include <PUJ_ML/Helpers.h>
 #include <PUJ_ML/IO/ReadCSV.h>
 #include <PUJ_ML/Model/Regression/Logistic.h>
 
@@ -37,6 +36,9 @@ int main( int argc, char** argv )
       )
     )
   {
+    auto X_tr = D_tr.block( 0, 0, D_tr.rows( ), D_tr.cols( ) - 1 );
+    auto y_tr = D_tr.col( D_tr.cols( ) - 1 );
+
     // Read model template
     TModel model( D_tr.cols( ) - 1 );
     std::cout << "==============================================" << std::endl;
@@ -45,16 +47,30 @@ int main( int argc, char** argv )
 
     // Fit model
     PUJ_ML::Helpers::FitModel(
-      model, args,
-      D_tr.block( 0, 0, D_tr.rows( ), D_tr.cols( ) - 1 ),
-      D_tr.col( D_tr.cols( ) - 1 ),
-      TMatrix( ), TMatrix( )
+      model, args, X_tr, y_tr, TMatrix( ), TMatrix( )
       );
 
     // Show final models
     std::cout << "==============================================" << std::endl;
     std::cout << "Fitted model: " <<  model << std::endl;
     std::cout << "  ---> Encoded model: " << model.encode64( ) << std::endl;
+
+    // Show final costs
+    std::cout << "==============================================" << std::endl;
+    std::cout << "Training cost = " << model.cost( X_tr, y_tr ) << std::endl;
+
+    // Compute confussion matrices
+    TMatrix K_tr
+      =
+      PUJ_ML::Helpers::Confussion( y_tr, model.threshold( X_tr ) )
+      .template cast< TReal >( );
+    std::cout << "==============================================" << std::endl;
+    std::cout << "Training confussion =" << std::endl << K_tr << std::endl;
+
+    // ROC curve
+    /* TODO
+       ROC_tr = PUJ_ML.Helpers.ROC( model, D_tr[ 0 ], D_tr[ 1 ] )
+    */
 
     return( EXIT_SUCCESS );
   }
@@ -67,45 +83,6 @@ int main( int argc, char** argv )
     return( EXIT_FAILURE );
   } // end if
 
-  // Show final costs
-  /* TODO
-     print( "==============================================" )
-     print( "Training cost = " + str( model.cost( D_tr[ 0 ], D_tr[ 1 ] ) ) )
-     if not D_te[ 0 ] is None:
-     print( "Testing cost  = " + str( model.cost( D_te[ 0 ], D_te[ 1 ] ) ) )
-     // end if
-     */
-
-  // Compute confussion matrices
-  /* TODO
-     K_tr = PUJ_ML.Helpers.Confussion( model, D_tr[ 0 ], D_tr[ 1 ] )
-     print( "==============================================" )
-     print( "Training confussion =\n", K_tr )
-     if not D_te[ 0 ] is None:
-     K_te = PUJ_ML.Helpers.Confussion( model, D_te[ 0 ], D_te[ 1 ] )
-     print( "Testing confussion  =\n", K_te )
-     // end if
-     */
-
-  // ROC curves
-  /* TODO
-     ROC_tr = PUJ_ML.Helpers.ROC( model, D_tr[ 0 ], D_tr[ 1 ] )
-     ROC_te = None
-     if not D_te[ 0 ] is None:
-     ROC_te = PUJ_ML.Helpers.ROC( model, D_te[ 0 ], D_te[ 1 ] )
-     // end if
-     */
-
-  /* TODO
-     fig, ax = matplotlib.pyplot.subplots( )
-     ax.plot( ROC_tr[ 0 ], ROC_tr[ 1 ], lw = 1 )
-     if not ROC_te is None:
-     ax.plot( ROC_te[ 0 ], ROC_te[ 1 ], lw = 1 )
-     // end if
-     ax.plot( [ 0, 1 ], [ 0, 1 ], lw = 0.5, linestyle = "--" )
-     ax.set_aspect( 1 )
-     matplotlib.pyplot.show( )
-  */
   return( EXIT_SUCCESS );
 }
 

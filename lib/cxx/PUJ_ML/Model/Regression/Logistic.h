@@ -36,6 +36,9 @@ namespace PUJ_ML
         template< class _TX >
         auto operator()( const Eigen::EigenBase< _TX >& X ) const;
 
+        template< class _TX >
+        auto threshold( const Eigen::EigenBase< _TX >& X ) const;
+
         template< class _TX, class _Ty >
         TReal cost(
           const Eigen::EigenBase< _TX >& X,
@@ -62,6 +65,11 @@ namespace PUJ_ML
 
       protected:
         using TIdx = Eigen::Index;
+
+        template< class _TX >
+        auto _eval(
+          const Eigen::EigenBase< _TX >& X, const bool& threshold
+          ) const;
 
         /**
          */

@@ -80,24 +80,10 @@ namespace PUJ_ML
       // TODO: debugger
 
       // Fit!
-      opt->fit( model ); // TODO: , X_tr, Y_tr, X_te, Y_te );
-
+      opt->fit( model );
 
       // Free memory
       delete opt;
-      /* TODO
-         TReal Alpha { 1e-2 };
-         TReal L1 { 0 };
-         TReal L2 { 0 };
-         TNatural BatchSize { 0 };
-         TNatural Epochs { 1000 };
-
-         std::string Optimizer  { "adam" };
-         std::string Validation { "normal" };
-
-         boost::program_options::positional_options_description Positional;
-         std::map< std::string, std::string > Strings;
-      */
     }
   } // end namespace
 } // end namespace

@@ -12,19 +12,17 @@ template< class _TX >
 auto PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
 operator()( const Eigen::EigenBase< _TX >& X ) const
 {
-  static const TReal _0  = TReal( 0 );
-  static const TReal _1  = TReal( 1 );
-  static const TReal M  = std::numeric_limits< TReal >::max( );
-  static const TReal L  = std::log( M ) / TReal( 2 );
-  auto f = []( TReal z ) -> TReal
-    {
-      TReal s;
-      if     ( z >  L ) s = _1;
-      else if( z < -L ) s = _0;
-      else              s = _1 / ( _1 + std::exp( -z ) );
-      return( s );
-    };
-  return( this->Superclass::operator()( X ).unaryExpr( f ) );
+  return( this->_eval( X, false ) );
+}
+
+
+// -------------------------------------------------------------------------
+template< class _TReal, class _TNatural >
+template< class _TX >
+auto PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
+threshold( const Eigen::EigenBase< _TX >& X ) const
+{
+  return( this->_eval( X, true ) );
 }
 
 // -------------------------------------------------------------------------
@@ -87,6 +85,28 @@ fit(
   */
 }
 
+// -------------------------------------------------------------------------
+template< class _TReal, class _TNatural >
+template< class _TX >
+auto PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
+_eval( const Eigen::EigenBase< _TX >& X, const bool& threshold ) const
+{
+  static const TReal _0  = TReal( 0 );
+  static const TReal _1  = TReal( 1 );
+  static const TReal M  = std::numeric_limits< TReal >::max( );
+  static const TReal L  = std::log( M ) / TReal( 2 );
+  auto f = [&threshold]( TReal z ) -> TReal
+    {
+      TReal s;
+      if     ( z >  L ) s = _1;
+      else if( z < -L ) s = _0;
+      else              s = _1 / ( _1 + std::exp( -z ) );
+      return( ( threshold )? ( ( s < TReal( 0.5 ) )? _0: _1 ): s );
+    };
+  return( this->Superclass::operator()( X ).unaryExpr( f ) );
+}
+
 #endif // __PUJ_ML__Model__Regression__Logistic__hxx__
+
 
 // eof - $RCSfile$
