@@ -34,6 +34,13 @@ size( ) const
 
 // -------------------------------------------------------------------------
 template< class _TReal, class _TNatural >
+void PUJ_ML::Model::Base< _TReal, _TNatural >::
+prepare_auxiliary_buffer( const TNatural& M )
+{
+}
+
+// -------------------------------------------------------------------------
+template< class _TReal, class _TNatural >
 std::string PUJ_ML::Model::Base< _TReal, _TNatural >::
 encode64( ) const
 {

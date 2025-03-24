@@ -55,6 +55,10 @@ namespace PUJ_ML
           {
           }
 
+        virtual void prepare_auxiliary_buffer( const TNatural& M ) override
+          {
+          }
+
         bool load( const std::string& fname )
           {
             // Load buffer
@@ -184,6 +188,8 @@ namespace PUJ_ML
         std::vector< TMatrixMap >  m_W;
         std::vector< TRowMap >     m_B;
         std::vector< std::string > m_A;
+
+        TReal* m_M { nullptr };
 
       private:
         static inline std::string lower( const std::string& s )
