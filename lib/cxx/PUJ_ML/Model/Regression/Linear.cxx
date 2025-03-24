@@ -20,6 +20,15 @@ PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
 }
 
 // -------------------------------------------------------------------------
+template< class _TReal, class _TNatural >
+typename PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
+TNatural PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
+input_size( ) const
+{
+  return( this->m_S - 1 );
+}
+
+// -------------------------------------------------------------------------
 namespace PUJ_ML
 {
   namespace Model

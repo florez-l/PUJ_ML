@@ -2,7 +2,9 @@
 // @author Leonardo Florez-Valencia (florez-l@javeriana.edu.co)
 // =========================================================================
 
+#include <algorithm>
 #include <iostream>
+#include <random>
 #include <PUJ_ML/Model/NeuralNetwork/FeedForward.h>
 
 int main( int argc, char** argv )
@@ -23,9 +25,28 @@ int main( int argc, char** argv )
   std::cout << "Read model: " << m << std::endl;
   std::cout << "  ---> Encoded model: " << m.encode64( ) << std::endl;
 
-  /* TODO
-     N = model.input_size( )
-     M = 3
+  // Evaluate on some random data
+  TModel::TNatural N = m.input_size( );
+  TModel::TNatural M = 3;
+  TModel::TMatrix X( M, N );
+  std::random_device rd;
+  std::mt19937 rg( rd( ) );
+  std::uniform_real_distribution< TReal > rdis( -100, 100 );
+  std::generate(
+    X.data( ), X.data( ) + X.size( ),
+    [&]( ) -> TReal
+    {
+      return( rdis( rg ) );
+    }
+    );
+  std::cout << "------------------------------------------" << std::endl;
+  std::cout << "Input" << std::endl << X << std::endl;
+  std::cout << "------------------------------------------" << std::endl;
+  std::cout << "Output" << std::endl << m( X ) << std::endl;
+
+
+
+/* TODO
      X = numpy.reshape(
      numpy.matrix( [ random.random( ) for i in range( M * N ) ] ),
      shape = ( M, N )

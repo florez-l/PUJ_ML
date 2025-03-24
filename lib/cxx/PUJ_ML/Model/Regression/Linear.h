@@ -31,6 +31,9 @@ namespace PUJ_ML
       public:
         Linear( const TNatural& n = 0 );
         virtual ~Linear( ) override;
+        
+        virtual TNatural input_size( ) const override;
+
 
         template< class _TX >
         auto operator()( const Eigen::EigenBase< _TX >& X ) const;

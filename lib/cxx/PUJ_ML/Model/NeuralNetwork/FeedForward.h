@@ -53,6 +53,13 @@ namespace PUJ_ML
           }
         virtual ~FeedForward( ) override
           {
+            if( this->m_M != nullptr )
+              std::free( this->m_M );
+          }
+          
+        virtual TNatural input_size( ) const override
+          {
+            return( this->m_N[ 0 ] );
           }
 
         virtual void prepare_auxiliary_buffer( const TNatural& M ) override
@@ -160,7 +167,36 @@ namespace PUJ_ML
         template< class _TX >
         auto operator()( const Eigen::EigenBase< _TX >& X ) const
           {
-            return( TReal( 0 ) );
+            bool memory_owned = false;
+            TReal* bA;
+            TReal* bZ;
+            if( this->m_M == nullptr )
+            {
+              TNatural nA = *( std::max_element( this->m_N.begin( ), this->m_N.end( ) ) );
+              TNatural nZ = *( std::max_element( this->m_N.begin( ) + 1, this->m_N.end( ) ) );
+              nA *= X.rows( );
+              nZ *= X.rows( );
+              this->m_M = reinterpret_cast< TReal* >( std::calloc( nA + nZ, sizeof( TReal ) ) );
+              bA = this->m_M;
+              bZ = bA + nA;
+              memory_owned = true;
+            } // end if
+            
+            TMatrixMap( this->m_M, X.rows( ), X.cols( ) ) = X.derived( ).template cast< TReal >( );
+            this->_eval( bA, bZ, X.rows( ), !memory_owned );
+            if( memory_owned )
+            {
+              TMatrix A = TMatrixMap( this->m_M, X.rows( ), this->m_N.back( ) );
+              std::free( this->m_M );
+              this->m_M = nullptr;
+              return( A );
+            }
+            else
+            {
+              TMatrix A = TMatrixMap( this->m_M, X.rows( ), this->m_N.back( ) );
+              // TODO
+              return( A );
+            } // end if
           }
 
         template< class _TX, class _Ty >
@@ -182,6 +218,23 @@ namespace PUJ_ML
           {
             return( 0 );
           }
+          
+      protected:
+        void _eval( TReal* bA, TReal* bZ, const TNatural& M, bool reuse ) const
+        {
+          TReal* A = bA;
+          TReal* Z = bZ;
+          TNatural L = this->number_of_layers( );
+          for( TNatural l = 1; l <= L; ++l )
+          {
+            TMatrixMap( Z, M, this->m_N[ l ] ) = ( TMatrixMap( A, M, this->m_N[ l - 1 ] ) * this->m_W[ l - 1 ] ).rowwise( ) + this->m_B[ l - 1 ];
+            TMatrixMap( A, M, this->m_N[ l ] ) = TMatrixMap( Z, M, this->m_N[ l ] );
+            if( reuse )
+            {
+              // TODO
+            } // end if
+          } // end for
+        }
 
       protected:
         std::vector< TNatural >    m_N;
@@ -189,7 +242,7 @@ namespace PUJ_ML
         std::vector< TRowMap >     m_B;
         std::vector< std::string > m_A;
 
-        TReal* m_M { nullptr };
+        mutable TReal* m_M { nullptr };
 
       private:
         static inline std::string lower( const std::string& s )

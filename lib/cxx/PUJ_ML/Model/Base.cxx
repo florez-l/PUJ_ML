@@ -34,6 +34,15 @@ size( ) const
 
 // -------------------------------------------------------------------------
 template< class _TReal, class _TNatural >
+typename PUJ_ML::Model::Base< _TReal, _TNatural >::
+TNatural PUJ_ML::Model::Base< _TReal, _TNatural >::
+input_size( ) const
+{
+  return( this->m_S );
+}
+
+// -------------------------------------------------------------------------
+template< class _TReal, class _TNatural >
 void PUJ_ML::Model::Base< _TReal, _TNatural >::
 prepare_auxiliary_buffer( const TNatural& M )
 {

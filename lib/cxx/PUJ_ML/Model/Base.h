@@ -29,6 +29,7 @@ namespace PUJ_ML
       virtual ~Base( );
 
       TNatural size( ) const;
+      virtual TNatural input_size( ) const;
 
       virtual void prepare_auxiliary_buffer( const TNatural& M );
 
