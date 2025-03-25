@@ -205,8 +205,10 @@ namespace PUJ_ML
             }
             else if( Self::lower( this->m_A.back( ).first ) == "softmax" )
             {
-              // TODO
-              return( A );
+              TMatrix T( A.rows( ), 1 );
+              for( TNatural r = 0; r < A.rows( ); ++r )
+                A.row( r ).maxCoeff( &( T( r, 0 ) ) );
+              return( T );
             }
             else
               return( A );
