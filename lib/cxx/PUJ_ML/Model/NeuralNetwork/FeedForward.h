@@ -5,6 +5,7 @@
 #define __PUJ_ML__Model__NeuralNetwork__FeedForward__h__
 
 #include <PUJ_ML/Model/Base.h>
+#include <PUJ_ML/Model/NeuralNetwork/Activations.h>
 #include <vector>
 
 
@@ -45,6 +46,10 @@ namespace PUJ_ML
         using TMatrixMap = Eigen::Map< TMatrix >;
         using TColumnMap = Eigen::Map< TColumn >;
         using TRowMap    = Eigen::Map< TRow >;
+        
+        using TActivations = PUJ_ML::Model::NeuralNetwork::Activations< TReal, TNatural >;
+        using TActivationPair = typename TActivations::TPair;
+        using TActivationFunction = typename TActivations::TFunction;
 
       public:
         FeedForward( )
@@ -113,12 +118,12 @@ namespace PUJ_ML
 
             this->m_N.push_back( i );
             this->m_N.push_back( o );
-            this->m_A.push_back( a );
+            this->m_A.push_back( TActivations::Get( a ) );
           }
         void add_layer( const TNatural& o, const std::string& a )
           {
             this->m_N.push_back( o );
-            this->m_A.push_back( a );
+            this->m_A.push_back( TActivations::Get( a ) );
           }
 
         TNatural number_of_layers( ) const
@@ -167,36 +172,44 @@ namespace PUJ_ML
         template< class _TX >
         auto operator()( const Eigen::EigenBase< _TX >& X ) const
           {
-            bool memory_owned = false;
-            TReal* bA;
-            TReal* bZ;
-            if( this->m_M == nullptr )
-            {
-              TNatural nA = *( std::max_element( this->m_N.begin( ), this->m_N.end( ) ) );
-              TNatural nZ = *( std::max_element( this->m_N.begin( ) + 1, this->m_N.end( ) ) );
-              nA *= X.rows( );
-              nZ *= X.rows( );
-              this->m_M = reinterpret_cast< TReal* >( std::calloc( nA + nZ, sizeof( TReal ) ) );
-              bA = this->m_M;
-              bZ = bA + nA;
-              memory_owned = true;
-            } // end if
+            TNatural nA = *( std::max_element( this->m_N.begin( ), this->m_N.end( ) ) );
+            TNatural nZ = *( std::max_element( this->m_N.begin( ) + 1, this->m_N.end( ) ) );
+            nA *= X.rows( );
+            nZ *= X.rows( );
+            TReal* buffer = reinterpret_cast< TReal* >( std::calloc( nA + nZ, sizeof( TReal ) ) );
+            TReal* bA = buffer;
+            TReal* bZ = bA + nA;
             
-            TMatrixMap( this->m_M, X.rows( ), X.cols( ) ) = X.derived( ).template cast< TReal >( );
-            this->_eval( bA, bZ, X.rows( ), !memory_owned );
-            if( memory_owned )
+            TMatrixMap( bA, X.rows( ), X.cols( ) ) = X.derived( ).template cast< TReal >( );
+            this->_eval( bA, bZ, X.rows( ), false );
+
+            TMatrix A = TMatrixMap( bA, X.rows( ), this->m_N.back( ) );
+            std::free( buffer );
+            return( A );
+          }
+
+        template< class _TX >
+        auto threshold( const Eigen::EigenBase< _TX >& X ) const
+          {
+            auto A = this->operator()( X );
+            if( Self::lower( this->m_A.back( ).first ) == "sigmoid" )
             {
-              TMatrix A = TMatrixMap( this->m_M, X.rows( ), this->m_N.back( ) );
-              std::free( this->m_M );
-              this->m_M = nullptr;
+              return(
+                A.unaryExpr(
+                  []( const TReal& a ) -> TReal
+                  {
+                    return( ( a < TReal( 0.5 )? TReal( 0 ): TReal( 1 ) ) );
+                  }
+                  ).eval( )
+                );
+            }
+            else if( Self::lower( this->m_A.back( ).first ) == "softmax" )
+            {
+              // TODO
               return( A );
             }
             else
-            {
-              TMatrix A = TMatrixMap( this->m_M, X.rows( ), this->m_N.back( ) );
-              // TODO
               return( A );
-            } // end if
           }
 
         template< class _TX, class _Ty >
@@ -220,7 +233,7 @@ namespace PUJ_ML
           }
           
       protected:
-        void _eval( TReal* bA, TReal* bZ, const TNatural& M, bool reuse ) const
+        void _eval( TReal* bA, TReal* bZ, const TNatural& M, bool keep_ZA ) const
         {
           TReal* A = bA;
           TReal* Z = bZ;
@@ -228,8 +241,9 @@ namespace PUJ_ML
           for( TNatural l = 1; l <= L; ++l )
           {
             TMatrixMap( Z, M, this->m_N[ l ] ) = ( TMatrixMap( A, M, this->m_N[ l - 1 ] ) * this->m_W[ l - 1 ] ).rowwise( ) + this->m_B[ l - 1 ];
-            TMatrixMap( A, M, this->m_N[ l ] ) = TMatrixMap( Z, M, this->m_N[ l ] );
-            if( reuse )
+            TMatrixMap mA( A, M, this->m_N[ l ] ), mZ( Z, M, this->m_N[ l ] );
+            this->m_A[ l - 1 ].second( mA, mZ, false );
+            if( keep_ZA )
             {
               // TODO
             } // end if
@@ -240,7 +254,7 @@ namespace PUJ_ML
         std::vector< TNatural >    m_N;
         std::vector< TMatrixMap >  m_W;
         std::vector< TRowMap >     m_B;
-        std::vector< std::string > m_A;
+        std::vector< TActivationPair > m_A;
 
         mutable TReal* m_M { nullptr };
 

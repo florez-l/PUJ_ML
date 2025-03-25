@@ -43,6 +43,8 @@ int main( int argc, char** argv )
   std::cout << "Input" << std::endl << X << std::endl;
   std::cout << "------------------------------------------" << std::endl;
   std::cout << "Output" << std::endl << m( X ) << std::endl;
+  std::cout << "------------------------------------------" << std::endl;
+  std::cout << "Threshold" << std::endl << m.threshold( X ) << std::endl;
 
 
 
