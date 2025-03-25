@@ -47,7 +47,7 @@ namespace PUJ_ML
         using TColumnMap = Eigen::Map< TColumn >;
         using TRowMap    = Eigen::Map< TRow >;
         
-        using TActivations = PUJ_ML::Model::NeuralNetwork::Activations< TReal, TNatural >;
+        using TActivations = PUJ_ML::Model::NeuralNetwork::Activations< TReal >;
         using TActivationPair = typename TActivations::TPair;
         using TActivationFunction = typename TActivations::TFunction;
 
