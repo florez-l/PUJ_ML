@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <numeric>
 #include <string>
 
 #include <fstream>
@@ -46,7 +47,7 @@ namespace PUJ_ML
         using TMatrixMap = Eigen::Map< TMatrix >;
         using TColumnMap = Eigen::Map< TColumn >;
         using TRowMap    = Eigen::Map< TRow >;
-        
+
         using TActivations = PUJ_ML::Model::NeuralNetwork::Activations< TReal >;
         using TActivationPair = typename TActivations::TPair;
         using TActivationFunction = typename TActivations::TFunction;
@@ -58,17 +59,34 @@ namespace PUJ_ML
           }
         virtual ~FeedForward( ) override
           {
-            if( this->m_M != nullptr )
-              std::free( this->m_M );
+            this->free_auxiliary_buffer( );
           }
-          
+
         virtual TNatural input_size( ) const override
           {
             return( this->m_N[ 0 ] );
           }
 
-        virtual void prepare_auxiliary_buffer( const TNatural& M ) override
+        virtual void prepare_auxiliary_buffer( const TNatural& M ) const override
           {
+            this->free_auxiliary_buffer( );
+            TNatural NA = std::accumulate( this->m_N.begin( ), this->m_N.end( ), 0 );
+            TNatural NZ = NA - this->m_N[ 0 ];
+
+            this->m_BufferA = reinterpret_cast< TReal* >( std::calloc( NA * M, sizeof( TReal ) ) );
+            this->m_BufferZ = reinterpret_cast< TReal* >( std::calloc( NZ * M, sizeof( TReal ) ) );
+            if( this->m_BufferA == nullptr || this->m_BufferZ == nullptr )
+              this->free_auxiliary_buffer( );
+          }
+
+        virtual void free_auxiliary_buffer( ) const override
+          {
+            if( this->m_BufferA != nullptr )
+              std::free( this->m_BufferA );
+            if( this->m_BufferZ != nullptr )
+              std::free( this->m_BufferZ );
+            this->m_BufferA = nullptr;
+            this->m_BufferZ = nullptr;
           }
 
         bool load( const std::string& fname )
@@ -104,7 +122,7 @@ namespace PUJ_ML
             input >> a;
             if( Self::lower( a ) == "random" )
               this->init( );
-            
+
 
             return( true );
           }
@@ -155,7 +173,7 @@ namespace PUJ_ML
               }
               );
 
-            // Create maps 
+            // Create maps
             this->m_W.clear( );
             this->m_B.clear( );
 
@@ -179,7 +197,7 @@ namespace PUJ_ML
             TReal* buffer = reinterpret_cast< TReal* >( std::calloc( nA + nZ, sizeof( TReal ) ) );
             TReal* bA = buffer;
             TReal* bZ = bA + nA;
-            
+
             TMatrixMap( bA, X.rows( ), X.cols( ) ) = X.derived( ).template cast< TReal >( );
             this->_eval( bA, bZ, X.rows( ), false );
 
@@ -217,7 +235,7 @@ namespace PUJ_ML
         template< class _TX, class _Ty >
         TReal cost(
           const Eigen::EigenBase< _TX >& bX,
-          const Eigen::EigenBase< _Ty >& by
+          const Eigen::EigenBase< _Ty >& bY
           ) const
           {
             return( 0 );
@@ -227,13 +245,31 @@ namespace PUJ_ML
         TReal cost_gradient(
           Eigen::EigenBase< _TG >& G,
           const Eigen::EigenBase< _TX >& bX,
-          const Eigen::EigenBase< _Ty >& by,
+          const Eigen::EigenBase< _Ty >& bY,
           const TReal& L1, const TReal& L2
           ) const
           {
+            auto X = bX.derived( ).template cast< TReal >( );
+            auto Y = bY.derived( ).template cast< TReal >( );
+            bool mem_owned = ( this->m_BufferA == nullptr || this->m_BufferZ == nullptr );
+            if( mem_owned )
+              this->prepare_auxiliary_buffer( X.rows( ) );
+
+            /* TODO
+               if( this->m_BufferA == nullptr || this->m_BufferZ == nullptr )
+               throw error
+            */
+
+            // Forward propagation
+            TMatrixMap( this->m_BufferA, X.rows( ), X.cols( ) ) =  X;
+            this->_eval( this->m_BufferA, this->m_BufferZ, X.rows( ), true );
+
+            if( mem_owned )
+              this->free_auxiliary_buffer( );
+
             return( 0 );
           }
-          
+
       protected:
         void _eval( TReal* bA, TReal* bZ, const TNatural& M, bool keep_ZA ) const
         {
@@ -243,12 +279,10 @@ namespace PUJ_ML
           for( TNatural l = 1; l <= L; ++l )
           {
             TMatrixMap( Z, M, this->m_N[ l ] ) = ( TMatrixMap( A, M, this->m_N[ l - 1 ] ) * this->m_W[ l - 1 ] ).rowwise( ) + this->m_B[ l - 1 ];
+            A += ( keep_ZA )? ( this->m_N[ l - 1 ] * M ): 0;
             TMatrixMap mA( A, M, this->m_N[ l ] ), mZ( Z, M, this->m_N[ l ] );
             this->m_A[ l - 1 ].second( mA, mZ, false );
-            if( keep_ZA )
-            {
-              // TODO
-            } // end if
+            Z += ( keep_ZA )? ( this->m_N[ l ] * M ): 0;
           } // end for
         }
 
@@ -258,7 +292,8 @@ namespace PUJ_ML
         std::vector< TRowMap >     m_B;
         std::vector< TActivationPair > m_A;
 
-        mutable TReal* m_M { nullptr };
+        mutable TReal* m_BufferA { nullptr };
+        mutable TReal* m_BufferZ { nullptr };
 
       private:
         static inline std::string lower( const std::string& s )

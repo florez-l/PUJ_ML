@@ -45,7 +45,11 @@ int main( int argc, char** argv )
   std::cout << "Output" << std::endl << m( X ) << std::endl;
   std::cout << "------------------------------------------" << std::endl;
   std::cout << "Threshold" << std::endl << m.threshold( X ) << std::endl;
-
+  std::cout << "------------------------------------------" << std::endl;
+  TModel::TColumn G( m.size( ) );
+  auto J = m.cost_gradient( G, X, m( X ), 0, 0 );
+  std::cout << G.transpose( ) << std::endl;
+  std::cout << J << std::endl;
 
 
 /* TODO

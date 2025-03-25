@@ -31,7 +31,8 @@ namespace PUJ_ML
       TNatural size( ) const;
       virtual TNatural input_size( ) const;
 
-      virtual void prepare_auxiliary_buffer( const TNatural& M );
+      virtual void prepare_auxiliary_buffer( const TNatural& M ) const;
+      virtual void free_auxiliary_buffer( ) const;
 
       template< class _Tw >
       Self& operator+=( const Eigen::EigenBase< _Tw >& w );
