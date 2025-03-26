@@ -32,21 +32,21 @@ namespace PUJ_ML
         Linear( const TNatural& n = 0 );
         virtual ~Linear( ) override;
         
+        virtual const std::string& cost_type( ) const override;
         virtual TNatural input_size( ) const override;
-
 
         template< class _TX >
         auto operator()( const Eigen::EigenBase< _TX >& X ) const;
 
         template< class _TX, class _Ty >
         TReal cost(
-          const Eigen::EigenBase< _TX >& bX,
-          const Eigen::EigenBase< _Ty >& by
+          const Eigen::EigenBase< _TX >& X,
+          const Eigen::EigenBase< _Ty >& y
           ) const;
 
         template< class _TG, class _TX, class _Ty >
         TReal cost_gradient(
-          Eigen::EigenBase< _TG >& G,
+          TReal* G,
           const Eigen::EigenBase< _TX >& bX,
           const Eigen::EigenBase< _Ty >& by,
           const TReal& L1, const TReal& L2

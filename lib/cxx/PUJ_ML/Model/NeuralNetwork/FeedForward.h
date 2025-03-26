@@ -6,6 +6,7 @@
 
 #include <PUJ_ML/Model/Base.h>
 #include <PUJ_ML/Model/NeuralNetwork/Activations.h>
+#include <string>
 #include <vector>
 
 namespace PUJ_ML
@@ -44,6 +45,7 @@ namespace PUJ_ML
         FeedForward( );
         virtual ~FeedForward( ) override;
 
+        virtual const std::string& cost_type( ) const override;
         virtual TNatural input_size( ) const override;
 
         virtual void prepare_auxiliary_buffer(
@@ -65,7 +67,10 @@ namespace PUJ_ML
         auto operator()( const Eigen::EigenBase< _TX >& X ) const;
 
         template< class _TX >
-        auto threshold( const Eigen::EigenBase< _TX >& X ) const;
+        auto threshold(
+          const Eigen::EigenBase< _TX >& X,
+          bool categorize = false
+          ) const;
 
         template< class _TX, class _Ty >
         TReal cost(
@@ -93,12 +98,6 @@ namespace PUJ_ML
           std::vector< TMatrixMap >& A, std::vector< TMatrixMap >& Z
           ) const;
 
-        template< class _TA, class _TY >
-        TReal _cost(
-          const Eigen::EigenBase< _TA >& bA,
-          const Eigen::EigenBase< _TY >& bY
-          ) const;
-
       protected:
         std::vector< TNatural >    m_N;
         std::vector< TMatrixMap >  m_W;
@@ -109,7 +108,7 @@ namespace PUJ_ML
         mutable TReal* m_BufferZ { nullptr };
 
       private:
-        static inline std::string lower( const std::string& s );
+        static std::string lower( const std::string& s );
       };
     } // end namespace
   } // end namespace

@@ -28,18 +28,10 @@ template< class _TX, class _Ty >
 typename PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
 TReal PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
 cost(
-  const Eigen::EigenBase< _TX >& bX, const Eigen::EigenBase< _Ty >& by
+  const Eigen::EigenBase< _TX >& X, const Eigen::EigenBase< _Ty >& y
   ) const
 {
-  auto X = bX.derived( ).template cast< TReal >( );
-  auto y = by.derived( ).template cast< TReal >( ).col( 0 );
-
-  /* TODO
-     if( X.rows( ) != y.rows( ) )
-     raise AssertionError( "Incompatible sizes." )
-     # end if
-  */
-  return( ( this->operator()( X ) - y ).array( ).pow( 2 ).mean( ) );
+  return( this->_cost( this->operator()( X ), y ) );
 }
 
 // -------------------------------------------------------------------------
@@ -48,22 +40,22 @@ template< class _TG, class _TX, class _Ty >
 typename PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
 TReal PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
 cost_gradient(
-  Eigen::EigenBase< _TG >& G,
+  TReal* G,
   const Eigen::EigenBase< _TX >& bX,
   const Eigen::EigenBase< _Ty >& by,
   const TReal& L1, const TReal& L2
   ) const
 {
   auto X = bX.derived( ).template cast< TReal >( );
-  auto y = by.derived( ).template cast< TReal >( );
+  auto y = by.derived( ).template cast< TReal >( ).col( 0 );
 
-  TColumn z = this->operator()( X ) - y;
-  G.derived( )( 0 , 0 ) = TReal( 2 ) * z.mean( );
-  G.derived( ).block( 1, 0, X.cols( ), 1 )
+  TColumn z = this->operator()( X );
+  *G = TReal( 2 ) * ( z - y ).mean( );
+  Eigen::Map< TMatrix >( G + 1, 1, X.cols( ) )
     =
-    ( X.array( ).colwise( ) * z.array( ) ).colwise( ).mean( ).transpose( );
+    ( X.array( ).colwise( ) * ( z - y ).array( ) ).colwise( ).mean( );
 
-  return( z.array( ).pow( 2 ).mean( ) );
+  return( this->_cost( z, y ) + this->_regularize( G, L1, L2 ) );
 }
 
 // -------------------------------------------------------------------------

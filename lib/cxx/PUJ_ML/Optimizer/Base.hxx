@@ -137,7 +137,9 @@ _fit_normal( TModel& model )
   } // end for
   batches.shrink_to_fit( );
 
+  model.prepare_auxiliary_buffer( bs );
   this->_fit( model, batches );
+  model.free_auxiliary_buffer( );
 }
 
 // -------------------------------------------------------------------------

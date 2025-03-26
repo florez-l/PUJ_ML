@@ -33,6 +33,8 @@ namespace PUJ_ML
         Logistic( const TNatural& n = 0 );
         virtual ~Logistic( ) override;
 
+        virtual const std::string& cost_type( ) const override;
+
         template< class _TX >
         auto operator()( const Eigen::EigenBase< _TX >& X ) const;
 
@@ -47,7 +49,7 @@ namespace PUJ_ML
 
         template< class _TG, class _TX, class _Ty >
         TReal cost_gradient(
-          Eigen::EigenBase< _TG >& G,
+          TReal* G,
           const Eigen::EigenBase< _TX >& bX,
           const Eigen::EigenBase< _Ty >& by,
           const TReal& L1, const TReal& L2
@@ -70,20 +72,6 @@ namespace PUJ_ML
         auto _eval(
           const Eigen::EigenBase< _TX >& X, const bool& threshold
           ) const;
-
-        /**
-         */
-        struct SVisitor
-        {
-          SVisitor( const TColumn& Z );
-          void init( const TReal& y, const TIdx& i, const TIdx& j );
-          void operator()( const TReal& y, const TIdx& i, const TIdx& j );
-
-          const TColumn* Z;
-          TReal J;
-          TReal E;
-          TReal D;
-        };
       };
     } // end namespace
   } // end namespace

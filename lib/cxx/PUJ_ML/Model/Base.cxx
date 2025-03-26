@@ -104,23 +104,37 @@ _to_stream( std::ostream& o ) const
 }
 
 // -------------------------------------------------------------------------
-namespace PUJ_ML
+template< class _TReal, class _TNatural >
+typename PUJ_ML::Model::Base< _TReal, _TNatural >::
+TReal PUJ_ML::Model::Base< _TReal, _TNatural >::
+_regularize( TReal* G, const TReal& L1, const TReal& L2 ) const
 {
-  namespace Model
-  {
-    template class PUJ_ML_EXPORT Base< float, unsigned int >;
-    template class PUJ_ML_EXPORT Base< float, unsigned long >;
-    template class PUJ_ML_EXPORT Base< float, unsigned long long >;
+  Eigen::Map< TMatrix > P( this->m_P, 1, this->m_S );
 
-    template class PUJ_ML_EXPORT Base< double, unsigned int >;
-    template class PUJ_ML_EXPORT Base< double, unsigned long >;
-    template class PUJ_ML_EXPORT Base< double, unsigned long long >;
+  Eigen::Map< TMatrix >( G, 1, this->m_S )
+    +=
+    P.unaryExpr(
+      [&L1,&L2]( const TReal& p ) -> TReal
+      {
+        TReal l1 = TReal( 0 );
+        if     ( p > TReal( 0 ) ) l1 =  L1;
+        else if( p < TReal( 0 ) ) l1 = -L1;
+        return( l1 + ( TReal( 2 ) * L2 * p ) );
+      }
+      );
+  TReal J
+    =
+    P.unaryExpr(
+      [&L1,&L2]( const TReal& p ) -> TReal
+      {
+        return( ( L1 * std::fabs( p ) ) + ( L2 * p * p ) );
+      }
+      ).sum( );
+  return( J );
+}
 
-    template class PUJ_ML_EXPORT Base< long double, unsigned int >;
-    template class PUJ_ML_EXPORT Base< long double, unsigned long >;
-    template class PUJ_ML_EXPORT Base< long double, unsigned long long >;
-  } // end namespace
-} // end namespace
+// -------------------------------------------------------------------------
+namespace PUJ_ML { namespace Model { PUJ_ML_Model_Instance( Base ); } }
 
 // eof - $RCSfile$
 

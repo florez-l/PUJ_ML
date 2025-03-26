@@ -34,10 +34,7 @@ cost(
   const Eigen::EigenBase< _TX >& X, const Eigen::EigenBase< _Ty >& y
   ) const
 {
-  TColumn z = this->operator()( X );
-  SVisitor v( z );
-  y.derived( ).template cast< TReal >( ).visit( v );
-  return( v.J / TReal( X.rows( ) ) );
+  return( this->_cost( this->operator()( X ), y ) );
 }
 
 // -------------------------------------------------------------------------
@@ -46,7 +43,7 @@ template< class _TG, class _TX, class _Ty >
 typename PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
 TReal PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
 cost_gradient(
-  Eigen::EigenBase< _TG >& G,
+  TReal* G,
   const Eigen::EigenBase< _TX >& bX,
   const Eigen::EigenBase< _Ty >& by,
   const TReal& L1, const TReal& L2
@@ -56,16 +53,12 @@ cost_gradient(
   auto y = by.derived( ).template cast< TReal >( );
 
   TColumn z = this->operator()( X );
-  SVisitor v( z );
-  y.visit( v );
-  z -= y;
-
-  G.derived( )( 0 , 0 ) = z.mean( );
-  G.derived( ).block( 1, 0, X.cols( ), 1 )
+  *G = z.mean( );
+  Eigen::Map< TMatrix >( G + 1, 1, X.cols( ) )
     =
-    ( X.array( ).colwise( ) * z.array( ) ).colwise( ).mean( ).transpose( );
+    ( X.array( ).colwise( ) * z.array( ) ).colwise( ).mean( );
 
-  return( v.J / TReal( X.rows( ) ) );
+  return( this->_cost( z, y ) + this->_regularize( G, L1, L2 ) );
 }
 
 // -------------------------------------------------------------------------

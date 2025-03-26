@@ -44,28 +44,14 @@ int main( int argc, char** argv )
   std::cout << "------------------------------------------" << std::endl;
   std::cout << "Output" << std::endl << m( X ) << std::endl;
   std::cout << "------------------------------------------" << std::endl;
-  std::cout << "Threshold" << std::endl << m.threshold( X ) << std::endl;
+  std::cout << "Threshold" << std::endl << m.threshold( X, true ) << std::endl;
   std::cout << "------------------------------------------" << std::endl;
-  TModel::TColumn G( m.size( ) );
-  G.fill( 0 );
-  // TODO: check with softmax (i.e. output size)
-
+  TModel::TColumn G = TModel::TColumn::Zero( m.size( ) );
   auto J = m.cost_gradient( G.data( ), X, m.threshold( X ), 0, 0 );
-  std::cout << G.transpose( ) << std::endl;
-  std::cout << J << std::endl;
-
-
-/* TODO
-     X = numpy.reshape(
-     numpy.matrix( [ random.random( ) for i in range( M * N ) ] ),
-     shape = ( M, N )
-     )
-     print( '==================================================' )
-     print( 'X      =\n', str( X ) )
-     print( '==================================================' )
-     print( 'y(X)   =\n', str( model( X, True ) ) )
-     print( '==================================================' )
-  */
+  std::cout << "Model size = " << G.size( ) << std::endl;
+  std::cout << "Cost gradient norm = " << ( G.transpose( ) * G ) << std::endl;
+  std::cout << "Cost = " << J << std::endl;
+  std::cout << "------------------------------------------" << std::endl;
 
   return( EXIT_SUCCESS );
 }

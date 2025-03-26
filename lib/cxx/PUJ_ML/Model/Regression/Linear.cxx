@@ -21,6 +21,15 @@ PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
 
 // -------------------------------------------------------------------------
 template< class _TReal, class _TNatural >
+const std::string& PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
+cost_type( ) const
+{
+  static const std::string t = "mse";
+  return( t );
+}
+
+// -------------------------------------------------------------------------
+template< class _TReal, class _TNatural >
 typename PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
 TNatural PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
 input_size( ) const
@@ -29,25 +38,8 @@ input_size( ) const
 }
 
 // -------------------------------------------------------------------------
-namespace PUJ_ML
-{
-  namespace Model
-  {
-    namespace Regression
-    {
-      template class PUJ_ML_EXPORT Linear< float, unsigned int >;
-      template class PUJ_ML_EXPORT Linear< float, unsigned long >;
-      template class PUJ_ML_EXPORT Linear< float, unsigned long long >;
-
-      template class PUJ_ML_EXPORT Linear< double, unsigned int >;
-      template class PUJ_ML_EXPORT Linear< double, unsigned long >;
-      template class PUJ_ML_EXPORT Linear< double, unsigned long long >;
-
-      template class PUJ_ML_EXPORT Linear< long double, unsigned int >;
-      template class PUJ_ML_EXPORT Linear< long double, unsigned long >;
-      template class PUJ_ML_EXPORT Linear< long double, unsigned long long >;
-    } // end namespace
-  } // end namespace
-} // end namespace
-
+namespace PUJ_ML { namespace Model { namespace Regression {
+  PUJ_ML_Model_Instance( Linear );
+} } }
+  
 // eof - $RCSfile$
