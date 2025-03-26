@@ -27,7 +27,7 @@ int main( int argc, char** argv )
 
   // Evaluate on some random data
   TModel::TNatural N = m.input_size( );
-  TModel::TNatural M = 3;
+  TModel::TNatural M = 7;
   TModel::TMatrix X( M, N );
   std::random_device rd;
   std::mt19937 rg( rd( ) );
@@ -47,7 +47,10 @@ int main( int argc, char** argv )
   std::cout << "Threshold" << std::endl << m.threshold( X ) << std::endl;
   std::cout << "------------------------------------------" << std::endl;
   TModel::TColumn G( m.size( ) );
-  auto J = m.cost_gradient( G, X, m( X ), 0, 0 );
+  G.fill( 0 );
+  // TODO: check with softmax (i.e. output size)
+
+  auto J = m.cost_gradient( G.data( ), X, m.threshold( X ), 0, 0 );
   std::cout << G.transpose( ) << std::endl;
   std::cout << J << std::endl;
 
