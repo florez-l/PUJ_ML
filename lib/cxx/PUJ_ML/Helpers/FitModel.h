@@ -78,6 +78,13 @@ namespace PUJ_ML
         opt->setValidationToNormal( );
 
       // TODO: debugger
+      opt->setDebug(
+        []( const auto& t, const auto& Jtr, const auto& Jte )
+        {
+          std::cout << t << " " << Jtr << " " << Jte << std::endl;
+          return( false );
+        }
+        );
 
       // Fit!
       opt->fit( model );

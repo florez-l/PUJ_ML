@@ -52,7 +52,7 @@ _fit( TModel& model, const TBatches& batches )
       J_tr
         =
         model.cost_gradient(
-          G,
+          G.data( ),
           Xtr( *bIt, Eigen::all ), Ytr( *bIt, Eigen::all ),
           this->m_L1, this->m_L2
           );
@@ -70,15 +70,14 @@ _fit( TModel& model, const TBatches& batches )
       J_te = ( 0 < Xte.rows( ) )? model.cost( Xte, Yte ): 0;
       stop
         =
-        this->m_Debug(
-          t, std::sqrt( sG.array( ).pow( 2 ).sum( ) ), J_tr, J_te
-          );
-      stop |= ( t >= this->m_NumberOfMaximumIterations );
+        this->m_Debug( t, J_tr, J_te )
+        |
+        ( t >= this->m_NumberOfMaximumIterations );
     }
     else
       stop = true;
   } // end while
-  this->m_Debug( t, std::sqrt( sG.array( ).pow( 2 ).sum( ) ), J_tr, J_te );
+  this->m_Debug( t, J_tr, J_te );
 }
 
 #endif // __PUJ_ML__Optimizer__GradientDescent__hxx__

@@ -31,9 +31,7 @@ namespace PUJ_ML
 
       using TDebug
       =
-        std::function<
-          bool( const TNatural&, const TReal&, const TReal&, const TReal& )
-          >;
+        std::function< bool( const TNatural&, const TReal&, const TReal& ) >;
 
       enum EValidation
       {
@@ -59,6 +57,7 @@ namespace PUJ_ML
       void setValidationToLeaveOneOut( );
       void setValidationToKfold( const TNatural& K );
       void setNumberOfMaximumIterations( const TNatural& i );
+      void setDebug( TDebug d );
 
       void fit( TModel& model );
 
@@ -88,9 +87,7 @@ namespace PUJ_ML
       TDebug m_Debug
         {
           [](
-            const TNatural& t,
-            const TReal& nG,
-            const TReal& Jtr, const TReal& Jte
+            const TNatural&, const TReal&, const TReal&
             ) -> bool { return( false ); }
         };
     };

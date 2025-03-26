@@ -100,6 +100,14 @@ setNumberOfMaximumIterations( const TNatural& i )
 // -------------------------------------------------------------------------
 template< class _TModel, class _TXTr, class _TYTr, class _TXTe, class _TYTe >
 void PUJ_ML::Optimizer::Base< _TModel, _TXTr, _TYTr, _TXTe, _TYTe >::
+setDebug( TDebug d )
+{
+  this->m_Debug = d;
+}
+
+// -------------------------------------------------------------------------
+template< class _TModel, class _TXTr, class _TYTr, class _TXTe, class _TYTe >
+void PUJ_ML::Optimizer::Base< _TModel, _TXTr, _TYTr, _TXTe, _TYTe >::
 fit( TModel& model )
 {
   if( this->m_Validation == Self::Normal )

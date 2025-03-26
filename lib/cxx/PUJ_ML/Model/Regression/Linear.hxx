@@ -36,7 +36,7 @@ cost(
 
 // -------------------------------------------------------------------------
 template< class _TReal, class _TNatural >
-template< class _TG, class _TX, class _Ty >
+template< class _TX, class _Ty >
 typename PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
 TReal PUJ_ML::Model::Regression::Linear< _TReal, _TNatural >::
 cost_gradient(

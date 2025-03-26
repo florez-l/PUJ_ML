@@ -47,7 +47,7 @@ namespace PUJ_ML
           const Eigen::EigenBase< _Ty >& y
           ) const;
 
-        template< class _TG, class _TX, class _Ty >
+        template< class _TX, class _Ty >
         TReal cost_gradient(
           TReal* G,
           const Eigen::EigenBase< _TX >& bX,
@@ -69,9 +69,7 @@ namespace PUJ_ML
         using TIdx = Eigen::Index;
 
         template< class _TX >
-        auto _eval(
-          const Eigen::EigenBase< _TX >& X, const bool& threshold
-          ) const;
+        auto _eval( const Eigen::EigenBase< _TX >& X, bool threshold ) const;
       };
     } // end namespace
   } // end namespace

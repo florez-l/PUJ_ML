@@ -44,7 +44,7 @@ namespace PUJ_ML
           const Eigen::EigenBase< _Ty >& y
           ) const;
 
-        template< class _TG, class _TX, class _Ty >
+        template< class _TX, class _Ty >
         TReal cost_gradient(
           TReal* G,
           const Eigen::EigenBase< _TX >& bX,

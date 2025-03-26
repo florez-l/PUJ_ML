@@ -39,7 +39,7 @@ cost(
 
 // -------------------------------------------------------------------------
 template< class _TReal, class _TNatural >
-template< class _TG, class _TX, class _Ty >
+template< class _TX, class _Ty >
 typename PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
 TReal PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
 cost_gradient(
@@ -50,13 +50,13 @@ cost_gradient(
   ) const
 {
   auto X = bX.derived( ).template cast< TReal >( );
-  auto y = by.derived( ).template cast< TReal >( );
+  auto y = by.derived( ).template cast< TReal >( ).col( 0 );
 
   TColumn z = this->operator()( X );
-  *G = z.mean( );
+  *G = ( z - y ).mean( );
   Eigen::Map< TMatrix >( G + 1, 1, X.cols( ) )
     =
-    ( X.array( ).colwise( ) * z.array( ) ).colwise( ).mean( );
+    ( X.array( ).colwise( ) * ( z - y ).array( ) ).colwise( ).mean( );
 
   return( this->_cost( z, y ) + this->_regularize( G, L1, L2 ) );
 }
@@ -82,7 +82,7 @@ fit(
 template< class _TReal, class _TNatural >
 template< class _TX >
 auto PUJ_ML::Model::Regression::Logistic< _TReal, _TNatural >::
-_eval( const Eigen::EigenBase< _TX >& X, const bool& threshold ) const
+_eval( const Eigen::EigenBase< _TX >& X, bool threshold ) const
 {
   static const TReal _0  = TReal( 0 );
   static const TReal _1  = TReal( 1 );
