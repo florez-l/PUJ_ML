@@ -251,9 +251,11 @@ namespace PUJ_ML
           {
             auto X = bX.derived( ).template cast< TReal >( );
             auto Y = bY.derived( ).template cast< TReal >( );
+            TNatural M = X.rows( );
+            TNatural N = X.cols( );
             bool mem_owned = ( this->m_BufferA == nullptr || this->m_BufferZ == nullptr );
             if( mem_owned )
-              this->prepare_auxiliary_buffer( X.rows( ) );
+              this->prepare_auxiliary_buffer( M );
 
             /* TODO
                if( this->m_BufferA == nullptr || this->m_BufferZ == nullptr )
@@ -261,8 +263,60 @@ namespace PUJ_ML
             */
 
             // Forward propagation
-            TMatrixMap( this->m_BufferA, X.rows( ), X.cols( ) ) =  X;
-            this->_eval( this->m_BufferA, this->m_BufferZ, X.rows( ), true );
+            TMatrixMap( this->m_BufferA, M, N ) =  X;
+            this->_eval( this->m_BufferA, this->m_BufferZ, M, true );
+
+            // Some sizes
+            TNatural NA = std::accumulate( this->m_N.begin( ), this->m_N.end( ), 0 );
+            TNatural NZ = NA - this->m_N[ 0 ];
+
+            // Backpropagate last layer
+            TNatural L = this->number_of_layers( );
+            TNatural oA = NA - ( this->m_N[ L ] * M );
+            std::cout << "++++++++++++++++++++++++" << std::endl;
+            std::cout << ( TMatrixMap( this->m_BufferA + oA, M, this->m_N[ L ] ) ) << std::endl;
+            std::cout << "........................" << std::endl;
+            std::cout << Y << std::endl;
+            std::cout << "........................" << std::endl;
+            std::cout << ( TMatrixMap( this->m_BufferA + oA, M, this->m_N[ L ] ) - Y ) << std::endl;
+            std::cout << "++++++++++++++++++++++++" << std::endl;
+
+            /* TODO
+               m = float( 1 ) / float( X.shape[ 0 ] )
+               DL = A[ L ] - Y
+               i = self.m_B[ L - 2 ].size
+               o = self.m_B[ L - 1 ].size
+               k = self.size( ) - o
+               G[ 0 , k : k + o ] = ( DL.sum( axis = 0 ) * m ).flatten( )
+               k -= i * o
+               G[ 0 , k : k + ( i * o ) ] = ( ( A[ L - 1 ].T @ DL ) * m ).flatten( )
+
+               # Backpropagate remaining layers
+               for l in range( L - 1, 0, -1 ):
+               o = i
+               i = self.m_W[ l - 1 ].shape[ 0 ]
+
+               DL = numpy.multiply(
+               ( DL @ self.m_W[ l ].T ),
+               self.m_A[ l - 1 ][ 1 ]( Z[ l - 1 ], True )
+               )
+               k -= o
+               G[ 0 , k : k + o ] = ( DL.sum( axis = 0 ) * m ).flatten( )
+               k -= i * o
+               G[ 0 , k : k + ( i * o ) ] = ( ( A[ l - 1 ].T @ DL ) * m ).flatten( )
+               # end for
+
+               # Cost (TODO: just MCE at the moment)
+               zi = numpy.where( Y == 0 )[ 0 ].tolist( )
+               oi = numpy.where( Y == 1 )[ 0 ].tolist( )
+
+               J  = numpy.log( float( 1 ) - A[ -1 ][ zi , : ] + self.m_Epsilon ).sum( )
+               J += numpy.log( A[ -1 ][ oi , : ] + self.m_Epsilon ).sum( )
+               J /= float( X.shape[ 0 ] )
+            */
+
+
+
 
             if( mem_owned )
               this->free_auxiliary_buffer( );
