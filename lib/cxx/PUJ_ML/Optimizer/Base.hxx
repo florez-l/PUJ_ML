@@ -127,9 +127,11 @@ _fit_normal( TModel& model )
   std::vector< Eigen::Index > idx( M );
   idx.shrink_to_fit( );
   std::iota( idx.begin( ), idx.end( ), 0 );
-  std::random_device dev;
-  std::mt19937 gen( dev( ) );
-  std::shuffle( idx.begin( ), idx.end( ), gen );
+  /* TODO
+     std::random_device dev;
+     std::mt19937 gen( dev( ) );
+     std::shuffle( idx.begin( ), idx.end( ), gen );
+  */
 
   TNatural bs = this->m_BatchSize;
   if( bs == 0 || bs > M )
