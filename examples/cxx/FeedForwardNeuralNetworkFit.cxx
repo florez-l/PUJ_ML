@@ -1,73 +1,91 @@
-## =========================================================================
-## @author Leonardo Florez-Valencia (florez-l@javeriana.edu.co)
-## =========================================================================
+// =========================================================================
+// @author Leonardo Florez-Valencia (florez-l@javeriana.edu.co)
+// =========================================================================
 
-import matplotlib.pyplot, sys
-sys.path.append( '../lib' )
-import PUJ_ML
+#include <iostream>
+#include <string>
 
-if __name__ == '__main__':
+#include <PUJ_ML/Helpers.h>
+#include <PUJ_ML/IO/ReadCSV.h>
+#include <PUJ_ML/Model/NeuralNetwork/FeedForward.h>
 
-  # Parse command line arguments
-  args = PUJ_ML.Helpers.ParseFitArguments(
-    sys.argv,
-    mandatory = [ ( 'model', str ), ( 'train', str ) ],
-    optional = [
-      ( '-t', '--test', str, '0' ),
-      ( '-d', '--delimiter', str, ',' )
-      ]
+int main( int argc, char** argv )
+{
+  using TModel = PUJ_ML::Model::NeuralNetwork::FeedForward< long double >;
+  using TReal = TModel::TReal;
+  using TNatural = TModel::TNatural;
+  using TMatrix = TModel::TMatrix;
+
+  // Parse command line arguments
+  using TParser = PUJ_ML::Helpers::ParseFitArguments< TReal, TNatural >;
+  TParser args( "FeedForward model fit", argc, argv );
+  args.add_positional_option< std::string >( "model" );
+  args.add_positional_option< std::string >( "train" );
+  args.add_option< std::string >( "separator", ",", "CSV column separator" );
+  args.parse( );
+  if( args.fail( ) )
+  {
+    args.show_error( std::cerr );
+    return( EXIT_FAILURE );
+  } // end if
+
+  // Read data
+  TMatrix D_tr;
+  if(
+    PUJ_ML::IO::ReadCSV(
+      D_tr, args.Strings[ "train" ], args.Strings[ "separator" ][ 0 ]
+      )
     )
+  {
+    auto X_tr = D_tr.block( 0, 0, D_tr.rows( ), D_tr.cols( ) - 1 );
+    auto y_tr = D_tr.col( D_tr.cols( ) - 1 );
 
-  # Read data
-  D_tr, D_te = PUJ_ML.IO.ReadCSV( args.train, args.test, args.delimiter )
-  
-  # Read model template
-  model = PUJ_ML.Model.NeuralNetwork.FeedForward( )
-  model.load( args.model )
-  print( '==============================================' )
-  print( 'Initial model: ' + str( model ) )
-  print( '  ---> Encoded model: ' + model.encode64( ) )
+    // Read model template
+    TModel model;
+    model.load( args.Strings[ "model" ] );
+    std::cout << "==============================================" << std::endl;
+    std::cout << "Initial model: " <<  model << std::endl;
+    std::cout << "  ---> Encoded model: " << model.encode64( ) << std::endl;
 
-  # Fit model
-  PUJ_ML.Helpers.FitModel( model, args, D_tr, D_te )
-  
-  # Show final models
-  print( '==============================================' )
-  print( 'Fitted model: ' + str( model ) )
-  print( '  ---> Encoded model: ' + model.encode64( ) )
+    // Fit model
+    PUJ_ML::Helpers::FitModel(
+      model, args, X_tr, y_tr, TMatrix( ), TMatrix( )
+      );
 
-  # Show final costs
-  print( '==============================================' )
-  print( 'Training cost = ' + str( model.cost( D_tr[ 0 ], D_tr[ 1 ] ) ) )
-  if not D_te[ 0 ] is None:
-    print( 'Testing cost  = ' + str( model.cost( D_te[ 0 ], D_te[ 1 ] ) ) )
-  # end if
+    // Show final models
+    std::cout << "==============================================" << std::endl;
+    std::cout << "Fitted model: " <<  model << std::endl;
+    std::cout << "  ---> Encoded model: " << model.encode64( ) << std::endl;
 
-  # Compute confussion matrices
-  K_tr = PUJ_ML.Helpers.Confussion( model, D_tr[ 0 ], D_tr[ 1 ] )
-  print( '==============================================' )
-  print( 'Training confussion =\n', K_tr )
-  if not D_te[ 0 ] is None:
-    K_te = PUJ_ML.Helpers.Confussion( model, D_te[ 0 ], D_te[ 1 ] )
-    print( 'Testing confussion  =\n', K_te )
-  # end if
+    // Show final costs
+    std::cout << "==============================================" << std::endl;
+    std::cout << "Training cost = " << model.cost( X_tr, y_tr ) << std::endl;
 
-  # ROC curves
-  ROC_tr = PUJ_ML.Helpers.ROC( model, D_tr[ 0 ], D_tr[ 1 ] )
-  ROC_te = None
-  if not D_te[ 0 ] is None:
-    ROC_te = PUJ_ML.Helpers.ROC( model, D_te[ 0 ], D_te[ 1 ] )
-  # end if
+    // Compute confussion matrices
+    TMatrix K_tr
+      =
+      PUJ_ML::Helpers::Confussion( y_tr, model.threshold( X_tr ) )
+      .template cast< TReal >( );
+    std::cout << "==============================================" << std::endl;
+    std::cout << "Training confussion =" << std::endl << K_tr << std::endl;
 
-  fig, ax = matplotlib.pyplot.subplots( )
-  ax.plot( ROC_tr[ 0 ], ROC_tr[ 1 ], lw = 1 )
-  if not ROC_te is None:
-    ax.plot( ROC_te[ 0 ], ROC_te[ 1 ], lw = 1 )
-  # end if
-  ax.plot( [ 0, 1 ], [ 0, 1 ], lw = 0.5, linestyle = '--' )
-  ax.set_aspect( 1 )
-  matplotlib.pyplot.show( )
+    // ROC curve
+    /* TODO
+       ROC_tr = PUJ_ML.Helpers.ROC( model, D_tr[ 0 ], D_tr[ 1 ] )
+    */
 
-# end if
+    return( EXIT_SUCCESS );
+  }
+  else
+  {
+    std::cerr
+      << "Error: could not read data from \""
+      << args.Strings[ "train" ] << "\""
+      << std::endl;
+    return( EXIT_FAILURE );
+  } // end if
 
-## eof - FeedForwardNeuralNetworkFit.py
+  return( EXIT_SUCCESS );
+}
+
+// eof - $RCSfile$

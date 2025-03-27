@@ -66,7 +66,7 @@ prepare_auxiliary_buffer( const TNatural& M ) const
 {
   this->free_auxiliary_buffer( );
   this->_prepare_buffers(
-    &( this->m_BufferA ), &( this->m_BufferZ ), nullptr, nullptr, M
+    &( this->m_BufferA ), &( this->m_BufferZ ), nullptr, nullptr, M, true
     );
 }
 
