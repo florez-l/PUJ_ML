@@ -17,6 +17,6 @@ generate_export_header(
   EXPORT_MACRO_NAME PUJ_ML_EXPORT
   EXPORT_FILE_NAME Export.h
   )
-target_link_libraries(PUJ_ML Eigen3::Eigen ${Boost_LIBRARIES})
+target_link_libraries(PUJ_ML ${PUJ_ML_OpenMP_LINK} Eigen3::Eigen ${Boost_LIBRARIES})
 
 ## eof - $RCSfile$

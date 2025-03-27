@@ -47,6 +47,11 @@ include(GenerateExportHeader)
 find_package(Boost REQUIRED COMPONENTS filesystem program_options)
 
 ## -- Find Eigen
+find_package(OpenMP QUIET)
+set(PUJ_ML_OpenMP_LINK "")
+if(OpenMP_CXX_FOUND)
+  set(PUJ_ML_OpenMP_LINK "OpenMP::OpenMP_CXX")
+endif()
 find_package(Eigen3 REQUIRED)
 
 ## -- Subdirs
