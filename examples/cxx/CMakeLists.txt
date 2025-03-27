@@ -11,6 +11,7 @@ set(
   _execs
   FeedForwardNeuralNetwork
   FeedForwardNeuralNetworkFit
+  FitMNISTModel
   LinearRegressionClosedFit
   LogisticRegressionFit
   )

@@ -92,6 +92,7 @@ cost_gradient(
   auto Y = bY.derived( ).template cast< TReal >( );
 
   // Prepare auxiliary memory
+  std::cout << "Prepare..." << std::endl;
   std::vector< TMatrixMap > A, Z;
   TNatural M = X.rows( );
   bool mem_owned
@@ -100,6 +101,7 @@ cost_gradient(
   this->_prepare_buffers(
     &( this->m_BufferA ), &( this->m_BufferZ ), &A, &Z, M, true
     );
+  std::cout << "done" << std::endl;
 
   /* TODO
      if( this->m_BufferA == nullptr || this->m_BufferZ == nullptr )
@@ -122,12 +124,17 @@ cost_gradient(
 
   // Forward propagation
   A[ 0 ] = X;
+  std::cout << "Feed forward..." << std::endl;
   this->_eval( A, Z );
+  std::cout << "done" << std::endl;
 
   // Compute unregularized cost
+  std::cout << "Cost..." << std::endl;
   TReal J = this->_cost( A[ L ], Y );
+  std::cout << "done" << std::endl;
 
   // Backpropagate last layer
+  std::cout << "Back propagation..." << std::endl;
   A[ L ] -= Y;
   G[ ( L << 1 ) - 1 ] = A[ L ].colwise( ).mean( );
   G[ ( L << 1 ) - 2 ] = ( A[ L - 1 ].transpose( ) * A[ L ] ) / TReal( M );
@@ -146,9 +153,12 @@ cost_gradient(
     G[ ( l << 1 ) - 1 ] = A[ l ].colwise( ).mean( );
     G[ ( l << 1 ) - 2 ] = ( A[ l - 1 ].transpose( ) * A[ l ] ) / TReal( M );
   } // end for
-  
+  std::cout << "done" << std::endl;
+
+  std::cout << "Freeing..." << std::endl;
   if( mem_owned )
     this->free_auxiliary_buffer( );
+  std::cout << "done" << std::endl;
   return( J + this->_regularize( bufferG, L1, L2 ) );
 }
 

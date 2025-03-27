@@ -1,29 +1,53 @@
-## =========================================================================
-## @author Leonardo Florez-Valencia (florez-l@javeriana.edu.co)
-## =========================================================================
+// =========================================================================
+// @author Leonardo Florez-Valencia (florez-l@javeriana.edu.co)
+// =========================================================================
 
-import sys
-sys.path.append( '../../lib/python3' )
-import PUJ_ML
+#include <iostream>
+#include <set>
 
-if __name__ == '__main__':
+#include <PUJ_ML/Model/NeuralNetwork/FeedForward.h>
+#include <PUJ_ML/IO/ReadIDX.h>
 
-  # Parse command line arguments
-  args = PUJ_ML.Helpers.ParseFitArguments(
-      sys.argv,
-      mandatory = [ ( 'dirname', str ), ( 'model', str ) ]
-      )
+int main( int argc, char** argv )
+{
+  using TReal = double;
+  using TModel = PUJ_ML::Model::NeuralNetwork::FeedForward< TReal >;
 
-  # Read model template
-  model = PUJ_ML.Model.NeuralNetwork.FeedForward( )
-  model.load( args.model )
+  if( argc < 4 )
+  {
+    std::cerr << "Usage: " << argv[ 0 ] << " model X Y" << std::endl;
+    return( EXIT_FAILURE );
+  } // end if
+  std::string model_fname = argv[ 1 ];
+  std::string X_fname = argv[ 2 ];
+  std::string Y_fname = argv[ 3 ];
 
-  # Read data
-  D_tr, D_te = PUJ_ML.IO.ReadMNIST( args.dirname )
+  // Prepare a model
+  TModel m;
+  m.load( model_fname );
+  /* TODO
+     std::cout << "Read model: " << m << std::endl;
+     std::cout << "  ---> Encoded model: " << m.encode64( ) << std::endl;
+  */
 
-  # Fit model
-  PUJ_ML.Helpers.FitModel( model, args, D_tr, D_te )
+  // Evaluate on some random data
+  TModel::TMatrix X;
+  PUJ_ML::IO::ReadIDX( X, X_fname );
+  Eigen::Matrix< unsigned char, Eigen::Dynamic, Eigen::Dynamic > L;
+  PUJ_ML::IO::ReadIDX( L, Y_fname );
+  std::set< unsigned int > labels { L.data( ), L.data( ) + L.size( ) };
+  TModel::TMatrix I = TModel::TMatrix::Identity( labels.size( ), labels.size( ) );
+  TModel::TMatrix Y = I( L.col( 0 ), Eigen::all );
 
-# end if
+  std::cout << "------------------------------------------" << std::endl;
+  TModel::TColumn G = TModel::TColumn::Zero( m.size( ) );
+  auto J = m.cost_gradient( G.data( ), X, Y, 0, 0 );
+  std::cout << "Model size = " << G.size( ) << std::endl;
+  std::cout << "Cost gradient norm = " << ( G.transpose( ) * G ) << std::endl;
+  std::cout << "Cost = " << J << std::endl;
+  std::cout << "------------------------------------------" << std::endl;
 
-## eof - FitMNISTModel.py
+  return( EXIT_SUCCESS );
+}
+
+// eof - $RCSfile$
